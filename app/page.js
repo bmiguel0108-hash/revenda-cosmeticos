@@ -68,9 +68,9 @@ export default async function PainelPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="card">
+        <section className="card overflow-x-auto">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Últimas vendas</h2>
-          <table className="table-base">
+          <table className="table-base min-w-[420px]">
             <thead>
               <tr>
                 <th>Nº</th>
@@ -104,9 +104,9 @@ export default async function PainelPage() {
           </Link>
         </section>
 
-        <section className="card">
+        <section className="card overflow-x-auto">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Estoque baixo</h2>
-          <table className="table-base">
+          <table className="table-base min-w-[280px]">
             <thead>
               <tr>
                 <th>Produto</th>

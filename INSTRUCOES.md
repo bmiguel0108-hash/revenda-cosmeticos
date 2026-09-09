@@ -1,6 +1,27 @@
 # Sistema de Revenda de Cosméticos
 
-## 🆕 Atualização — Parte 2
+## 🆕 Atualização — Parte 3 (ajuste para celular)
+
+Ajustei o menu lateral: no celular, ele agora vira um botão de menu (☰) no
+topo, em vez de ocupar a tela toda com a lista de páginas. As tabelas e
+formulários já tinham rolagem lateral para telas pequenas, então essa era a
+peça que faltava para usar o sistema confortavelmente pelo celular.
+
+Ainda pendentes, aguardando o que você vai me mandar:
+- A sua logo (para colocar no menu e na tela de login).
+- Os modelos de layout do Catálogo e das outras telas (e, junto com isso,
+  fotos dos produtos).
+- O botão de WhatsApp fica guardado para quando construirmos a página pública
+  de pedidos.
+
+Para atualizar, é o mesmo fluxo de sempre: extraia a pasta nova, copie o
+conteúdo para dentro da pasta do repositório que o GitHub Desktop já
+reconhece (Repository → Show in Finder/Explorer), commit e push. Sem
+mudanças no Supabase ou no Vercel dessa vez.
+
+---
+
+## Atualização — Parte 2
 
 Essa entrega traz as telas que faltavam: **Nova Venda**, **Vendas** (com cancelamento),
 **Contas a Receber**, **Recebimentos**, **Clientes** e o **Painel** com os resumos.
