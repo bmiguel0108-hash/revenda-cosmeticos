@@ -300,6 +300,12 @@ left join (
   group by sale_id
 ) p on p.sale_id = s.id;
 
+-- Segurança: essa visão precisa respeitar as mesmas regras de acesso das tabelas
+-- que ela consulta (RLS), e nunca ficar visível para quem não está logado.
+alter view vw_sales set (security_invoker = on);
+revoke all on vw_sales from anon, public;
+grant select on vw_sales to authenticated;
+
 -- =====================================================================
 -- 10. VISÃO DE PREÇOS POR FORMA DE PAGAMENTO (matriz do catálogo)
 -- =====================================================================
@@ -312,6 +318,10 @@ select
 from products pr
 cross join payment_methods pm
 where pm.active = true;
+
+alter view vw_product_prices set (security_invoker = on);
+revoke all on vw_product_prices from anon, public;
+grant select on vw_product_prices to authenticated;
 
 -- =====================================================================
 -- 11. DADOS INICIAIS (as formas de pagamento e marcas que você já usa)

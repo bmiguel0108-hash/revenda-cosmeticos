@@ -1,104 +1,147 @@
-# Sistema de Revenda de Cosméticos — Parte 1
+# Sistema de Revenda de Cosméticos
 
-Esta é a primeira entrega: banco de dados completo, login, tela de **Configurações**
-(formas de pagamento e marcas) e tela de **Catálogo de Produtos** (com estoque e
-preços calculados automaticamente por forma de pagamento). As outras telas
-(Painel, Vendas, Contas a Receber, Recebimentos, Clientes) aparecem como
-"em construção" por enquanto — vêm nas próximas entregas.
+## 🆕 Atualização — Parte 2
 
-Siga os passos na ordem. Qualquer erro, me avise com o print da tela.
+Essa entrega traz as telas que faltavam: **Nova Venda**, **Vendas** (com cancelamento),
+**Contas a Receber**, **Recebimentos**, **Clientes** e o **Painel** com os resumos.
+Também troquei o nome que aparece no menu lateral para "Beatriz Miguel".
 
----
+Você **não precisa repetir a configuração do Supabase, do login nem do Vercel** —
+é só atualizar os arquivos do projeto. Siga os passos abaixo, na ordem.
 
-## Passo 1 — Criar o projeto no Supabase
+### Passo 1 — Rodar a correção de segurança (se ainda não rodou)
 
-1. Acesse [supabase.com](https://supabase.com) e entre na sua conta (a mesma do Almoxarifado, se quiser manter tudo no mesmo lugar).
-2. Clique em **New Project**.
-3. Dê um nome, por exemplo `revenda-cosmeticos`, escolha uma senha de banco de dados (guarde essa senha em local seguro) e a região mais próxima (South America).
-4. Aguarde alguns minutos até o projeto ficar pronto.
+Se você já rodou o arquivo `patch_1_seguranca_views.sql` que te mandei antes, pule
+para o Passo 2. Se ainda não rodou:
 
-> Importante: crie um projeto **novo**, separado do Almoxarifado — são dois sistemas diferentes, com bancos de dados diferentes.
+1. No Supabase, vá em **SQL Editor** → **New query**.
+2. Cole o conteúdo do arquivo `supabase/patch_1_seguranca_views.sql` (está dentro
+   da pasta atualizada) e clique em **Run**.
 
----
+### Passo 2 — Atualizar os arquivos no GitHub Desktop
 
-## Passo 2 — Rodar o script do banco de dados
+1. Extraia (descompacte) a nova pasta `revenda-cosmeticos` que te enviei, em um
+   local qualquer (pode ser a Área de Trabalho, por exemplo).
+2. Abra o **GitHub Desktop**. Confirme que o repositório selecionado (canto
+   superior esquerdo) é o **revenda-cosmeticos**.
+3. No menu **Repository** → **Show in Finder** (Mac) ou **Show in Explorer**
+   (Windows), abra a pasta onde esse repositório vive no seu computador — é a
+   mesma pasta de quando corrigimos o problema do 404, que já tem o
+   `package.json`, `app`, `components`, `lib`, `supabase` etc.
+4. Dentro da pasta que você **extraiu agora** (Passo 1), selecione tudo que
+   está dentro dela — o `package.json` e todas as pastas ao lado dele — e
+   copie.
+5. Cole dentro da pasta do repositório (a do passo 3), substituindo/mesclando
+   os arquivos que já existem (o computador vai perguntar se quer substituir —
+   pode confirmar que sim).
+6. Volte para o GitHub Desktop. Ele vai mostrar uma lista de arquivos novos e
+   alterados do lado esquerdo. Escreva uma mensagem de commit, por exemplo
+   "Parte 2 - Vendas, Recebimentos, Clientes, Painel", e clique em
+   **Commit to main**.
+7. Clique em **Push origin** (canto superior direito).
 
-1. Dentro do projeto no Supabase, no menu à esquerda, clique em **SQL Editor**.
-2. Clique em **New query**.
-3. Abra o arquivo `supabase/schema.sql` (está dentro da pasta que te enviei), copie todo o conteúdo e cole no editor.
-4. Clique em **Run** (ou `Ctrl+Enter`).
-5. Deve aparecer "Success. No rows returned". Isso significa que todas as tabelas, cálculos automáticos e as formas de pagamento/marcas iniciais já foram criados.
+A Vercel vai perceber esse envio sozinha e começar um novo deploy automaticamente.
+Aguarde 1-2 minutos, confira em **Deployments** se ficou **Ready**, e acesse o
+link do sistema de novo.
 
----
+### Passo 3 — Testar as telas novas
 
-## Passo 3 — Criar seu usuário de login
+1. **Nova Venda**: escolha (ou cadastre) um cliente, adicione um ou mais
+   produtos com quantidade, escolha a forma de pagamento, informe entrada e
+   parcelas se for o caso, e registre a venda. Confira se o estoque do produto
+   baixou sozinho (veja em Catálogo).
+2. **Vendas**: veja se a venda aparece na lista, clique em "Ver itens" para
+   conferir os produtos, e teste o botão "Cancelar venda" — o estoque deve
+   voltar sozinho.
+3. **Contas a Receber**: se a venda tiver saldo devedor, ela deve aparecer aqui.
+4. **Recebimentos**: registre um pagamento para uma venda em aberto e confira
+   se o saldo devedor dela diminuiu.
+5. **Clientes**: confira se o cliente aparece com o total comprado e o
+   histórico de compras.
+6. **Painel**: confira se os resumos (vendas do mês, total a receber, estoque
+   baixo) aparecem corretos.
 
-1. No menu à esquerda, clique em **Authentication** → **Users**.
-2. Clique em **Add user** → **Create new user**.
-3. E-mail: `mbsilva@amigosdobem.org` (ou o e-mail que preferir usar para entrar no sistema).
-4. Senha: escolha uma senha seguir e guarde-a — é com ela que você vai entrar no sistema.
-5. Marque a opção **Auto Confirm User** (se aparecer), para não precisar confirmar por e-mail.
-6. Clique em **Create user**.
-
----
-
-## Passo 4 — Pegar as chaves do projeto
-
-1. No menu à esquerda, clique em **Settings** (ícone de engrenagem) → **API**.
-2. Copie dois valores, você vai precisar deles no Passo 6:
-   - **Project URL**
-   - **anon public** (a chave pública)
-
----
-
-## Passo 5 — Enviar os arquivos pelo GitHub Desktop
-
-1. Extraia (descompacte) a pasta `revenda-cosmeticos` que te enviei.
-2. Abra o **GitHub Desktop**.
-3. Menu **File** → **Add Local Repository** → selecione a pasta `revenda-cosmeticos` que você extraiu.
-   - Se aparecer um aviso dizendo que a pasta não é um repositório Git, clique em **"create a repository"**.
-4. No campo de mensagem do commit (canto inferior esquerdo), escreva algo como "Primeira versão" e clique em **Commit to main**.
-5. Clique em **Publish repository** (no topo). Desmarque "Keep this code private" se quiser deixar público, ou deixe marcado para manter privado (recomendado). Clique em **Publish Repository**.
-
----
-
-## Passo 6 — Publicar no Vercel
-
-1. Acesse [vercel.com](https://vercel.com) e entre com a mesma conta do GitHub (ou crie uma conta usando "Continue with GitHub").
-2. Clique em **Add New** → **Project**.
-3. Selecione o repositório `revenda-cosmeticos` que você acabou de publicar e clique em **Import**.
-4. Antes de clicar em Deploy, abra a seção **Environment Variables** e adicione duas variáveis:
-   - `NEXT_PUBLIC_SUPABASE_URL` → cole o **Project URL** que você copiou no Passo 4
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` → cole a chave **anon public** que você copiou no Passo 4
-5. Clique em **Deploy**.
-6. Aguarde alguns minutos. Quando terminar, clique em **Visit** (ou no link do projeto) para abrir o sistema.
+Qualquer erro, me manda o print (e o que aparecer em vermelho no Console do
+navegador, se for erro de tela).
 
 ---
 
-## Passo 7 — Testar
+## O que já está pronto
 
-1. Acesse o link do Vercel. Você deve cair na tela de login.
-2. Entre com o e-mail e a senha que você criou no Passo 3.
-3. Você deve ver o Painel com os cartões para "Catálogo de Produtos" e "Configurações".
-4. Em **Configurações**, confira se as formas de pagamento e as marcas já vieram cadastradas (Pix, Dinheiro, Tap Ton, Link, Maquininha em todas as variações, Parcelado na Confiança, e as 5 marcas). Você pode editar as taxas a qualquer momento aqui.
-5. Em **Catálogo de Produtos**, cadastre um produto de teste, confira se o Lucro e a Margem aparecem certos, clique em "Ver preços" para conferir a tabela de preços por forma de pagamento, e teste o botão "Estoque" para lançar uma entrada.
-
-Se tudo isso funcionar, está tudo certo! Qualquer erro em qualquer passo, me manda o print (e se for erro de tela no sistema, também vale abrir o "F12" do navegador, aba "Console", e me mandar o que aparecer em vermelho).
-
----
-
-## O que já está pronto nesta Parte 1
-
-- Banco de dados completo (produtos, estoque, clientes, vendas, itens de venda, recebimentos, formas de pagamento, marcas), incluindo os cálculos automáticos e o controle de estoque com entrada/saída.
+- Banco de dados completo (produtos, estoque, clientes, vendas, itens de
+  venda, recebimentos, formas de pagamento, marcas), com os cálculos
+  automáticos, controle de estoque com entrada/saída, e cancelamento de venda
+  com devolução ao estoque.
 - Login (só você acessa).
-- Tela de Configurações: formas de pagamento (com taxa editável e multiplicador calculado sozinho) e marcas.
-- Tela de Catálogo de Produtos: cadastro com marca, ciclo, custo, preço-alvo, lucro e margem automáticos, estoque com histórico de entradas/saídas, campo "pronto para entrega" (para a futura página pública), e a tabela de preços por forma de pagamento calculada automaticamente.
+- Configurações: formas de pagamento (taxa editável, multiplicador automático)
+  e marcas.
+- Catálogo de Produtos: estoque, campo "pronto para entrega", tabela de
+  preços por forma de pagamento.
+- Nova Venda: escolha de cliente e produtos do catálogo com quantidade,
+  cálculo automático de valor e baixa de estoque.
+- Vendas: lista completa, detalhes por venda, cancelamento com devolução ao
+  estoque.
+- Contas a Receber: calculado na hora, com dias em atraso.
+- Recebimentos: registro de pagamentos recebidos (entrada ou parcela).
+- Clientes: cadastro com telefone e histórico de compras.
+- Painel: resumo com vendas do mês, lucro do mês, total a receber, vendas
+  atrasadas, últimas vendas e produtos com estoque baixo.
 
-## O que vem nas próximas entregas
+## O que vem depois (fase futura, combinada desde o início)
 
-- Painel com os resumos (vendas do mês, total a receber, estoque baixo).
-- Nova Venda (escolher cliente e produtos do catálogo com quantidade).
-- Vendas (lista, cancelamento de venda com devolução ao estoque).
-- Contas a Receber (calculado na hora, com dias em atraso).
-- Recebimentos (registrar pagamentos recebidos).
-- Clientes (cadastro com telefone e histórico de compras).
+- Página pública de catálogo para seus clientes fazerem pedidos (produtos
+  "prontos para entrega"), quando você quiser avançar para essa fase.
+
+---
+
+## Configuração inicial (Parte 1) — já feita, guardada aqui como referência
+
+Estes passos você já fez. Ficam aqui só para o caso de precisar recriar o
+projeto do zero um dia (ex: outro computador).
+
+### Passo 1 — Criar o projeto no Supabase
+
+1. Acesse [supabase.com](https://supabase.com) e entre na sua conta.
+2. Clique em **New Project**.
+3. Dê um nome, por exemplo `revenda-cosmeticos`, escolha uma senha de banco de
+   dados (guarde essa senha em local seguro) e a região mais próxima (South
+   America).
+4. Se aparecer uma seção **Security**, deixe como vem por padrão: **Enable
+   Data API** marcado, **Automatically expose new tables** marcado,
+   **Enable automatic RLS** desmarcado, **Postgres Type** = "Postgres".
+5. Clique em **Create new project** e aguarde ficar pronto.
+
+### Passo 2 — Rodar o script do banco de dados
+
+1. No **SQL Editor** → **New query**, cole o conteúdo de `supabase/schema.sql`
+   e clique em **Run**.
+2. Em seguida, cole e rode também `supabase/patch_1_seguranca_views.sql`
+   (correção de segurança das visões).
+
+### Passo 3 — Criar seu usuário de login
+
+1. **Authentication** → **Users** → **Add user** → **Create new user**.
+2. E-mail e senha à sua escolha, marque **Auto Confirm User** se aparecer.
+
+### Passo 4 — Pegar as chaves do projeto
+
+1. **Settings** → **API Keys** (ou o botão **Connect** no topo da página).
+2. Copie o **Project URL** e a chave pública (**anon** ou **Publishable key**).
+
+### Passo 5 — Enviar os arquivos pelo GitHub Desktop
+
+1. Extraia a pasta do projeto.
+2. No GitHub Desktop, **File** → **Add Local Repository**, selecione a pasta
+   extraída (confirme que ela tenha `package.json` direto dentro, não uma
+   subpasta).
+3. Commit e **Publish repository**.
+
+### Passo 6 — Publicar no Vercel
+
+1. **Add New** → **Project**, selecione o repositório, **Import**.
+2. Confirme que o **Framework Preset** está como **Next.js** (não "Other").
+3. Em **Environment Variables**, adicione `NEXT_PUBLIC_SUPABASE_URL` e
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY` com os valores do Passo 4.
+4. Em **Settings → Deployment Protection**, deixe **Disabled** (o login do
+   próprio sistema já protege o acesso).
+5. Clique em **Deploy**.

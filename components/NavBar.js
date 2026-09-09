@@ -29,7 +29,7 @@ export default function NavBar({ userEmail }) {
   return (
     <nav className="w-full md:w-60 shrink-0 bg-white border-b md:border-b-0 md:border-r border-pink-100 md:min-h-screen p-4 flex flex-col">
       <div className="mb-6">
-        <p className="text-lg font-semibold text-brand-700">Amigos do Bem</p>
+        <p className="text-lg font-semibold text-brand-700">Beatriz Miguel</p>
         <p className="text-xs text-gray-500">Revenda de Cosméticos</p>
       </div>
 
