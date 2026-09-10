@@ -33,10 +33,16 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-brand-50 px-4">
       <form onSubmit={handleSubmit} className="card w-full max-w-sm">
-        <h1 className="text-xl font-semibold text-brand-700 mb-1">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logo.jpg"
+          alt="BM Espaço Multimarcas"
+          className="h-24 w-24 mx-auto mb-4 rounded-full mix-blend-multiply"
+        />
+        <h1 className="text-xl font-semibold text-brand-700 mb-1 text-center">
           Revenda de Cosméticos
         </h1>
-        <p className="text-sm text-gray-500 mb-6">Entre com sua conta</p>
+        <p className="text-sm text-gray-500 mb-6 text-center">Entre com sua conta</p>
 
         <div className="mb-4">
           <label className="label">E-mail</label>

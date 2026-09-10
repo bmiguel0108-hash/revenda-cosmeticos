@@ -36,9 +36,19 @@ export default function NavBar({ userEmail }) {
   return (
     <nav className="w-full md:w-60 shrink-0 bg-white border-b md:border-b-0 md:border-r border-pink-100 md:min-h-screen p-4 flex flex-col">
       <div className="flex items-center justify-between md:block mb-2 md:mb-6">
-        <div>
-          <p className="text-lg font-semibold text-brand-700">Beatriz Miguel</p>
-          <p className="text-xs text-gray-500">Revenda de Cosméticos</p>
+        <div className="flex items-center gap-2 md:block md:text-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo.jpg"
+            alt="BM Espaço Multimarcas"
+            className="h-12 w-12 md:h-20 md:w-20 md:mx-auto rounded-full mix-blend-multiply"
+          />
+          <div className="md:mt-2">
+            <p className="text-sm md:text-base font-semibold text-brand-700 leading-tight">
+              Beatriz Miguel
+            </p>
+            <p className="text-xs text-gray-500">Revenda de Cosméticos</p>
+          </div>
         </div>
 
         <button

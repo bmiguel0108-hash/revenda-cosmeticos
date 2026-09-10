@@ -1,6 +1,18 @@
 # Sistema de Revenda de Cosméticos
 
-## 🆕 Atualização — Parte 3 (ajuste para celular)
+## 🆕 Atualização — Parte 4 (logo)
+
+Coloquei a sua logo (BM Espaço Multimarcas) no menu lateral e na tela de
+login, além de deixá-la como ícone da aba do navegador. Mesmo fluxo de
+sempre para atualizar: copiar os arquivos novos para a pasta do repositório,
+commit e push — sem mudanças no Supabase ou no Vercel.
+
+Ainda aguardando: os modelos de layout do Catálogo e das outras telas (e as
+fotos dos produtos, que entram junto com esse redesenho).
+
+---
+
+## Atualização — Parte 3 (ajuste para celular)
 
 Ajustei o menu lateral: no celular, ele agora vira um botão de menu (☰) no
 topo, em vez de ocupar a tela toda com a lista de páginas. As tabelas e
