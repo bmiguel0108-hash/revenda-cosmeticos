@@ -34,26 +34,28 @@ export default function NavBar({ userEmail }) {
   }
 
   return (
-    <nav className="w-full md:w-60 shrink-0 bg-white border-b md:border-b-0 md:border-r border-pink-100 md:min-h-screen p-4 flex flex-col">
+    <nav className="w-full md:w-60 shrink-0 bg-brand-700 md:min-h-screen p-4 flex flex-col">
       <div className="flex items-center justify-between md:block mb-2 md:mb-6">
         <div className="flex items-center gap-2 md:block md:text-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/logo.jpg"
-            alt="BM Espaço Multimarcas"
-            className="h-12 w-12 md:h-20 md:w-20 md:mx-auto rounded-full mix-blend-multiply"
-          />
+          <div className="h-12 w-12 md:h-20 md:w-20 md:mx-auto rounded-full bg-white p-1 flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo.jpg"
+              alt="BM Espaço Multimarcas"
+              className="h-full w-full rounded-full mix-blend-multiply"
+            />
+          </div>
           <div className="md:mt-2">
-            <p className="text-sm md:text-base font-semibold text-brand-700 leading-tight">
+            <p className="text-sm md:text-base font-semibold text-white leading-tight">
               Beatriz Miguel
             </p>
-            <p className="text-xs text-gray-500">Revenda de Cosméticos</p>
+            <p className="text-xs text-brand-200">Revenda de Cosméticos</p>
           </div>
         </div>
 
         <button
           type="button"
-          className="md:hidden inline-flex items-center justify-center rounded-lg border border-gray-200 p-2 text-gray-600"
+          className="md:hidden inline-flex items-center justify-center rounded-lg border border-white/20 p-2 text-white"
           onClick={() => setMobileOpen((v) => !v)}
           aria-label="Abrir menu"
         >
@@ -79,8 +81,8 @@ export default function NavBar({ userEmail }) {
                 href={link.href}
                 className={`block rounded-lg px-3 py-2 text-sm font-medium transition ${
                   active
-                    ? "bg-brand-50 text-brand-700"
-                    : "text-gray-600 hover:bg-gray-50"
+                    ? "bg-white text-brand-700"
+                    : "text-brand-100 hover:bg-white/10"
                 }`}
               >
                 {link.label}
@@ -90,9 +92,12 @@ export default function NavBar({ userEmail }) {
         })}
       </ul>
 
-      <div className={`${mobileOpen ? "block" : "hidden"} md:block mt-6 border-t border-gray-100 pt-4`}>
-        <p className="text-xs text-gray-400 truncate mb-2">{userEmail}</p>
-        <button onClick={handleLogout} className="btn-secondary w-full text-xs">
+      <div className={`${mobileOpen ? "block" : "hidden"} md:block mt-6 border-t border-white/15 pt-4`}>
+        <p className="text-xs text-brand-200 truncate mb-2">{userEmail}</p>
+        <button
+          onClick={handleLogout}
+          className="w-full inline-flex items-center justify-center rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-xs font-medium text-white hover:bg-white/10 transition"
+        >
           Sair
         </button>
       </div>

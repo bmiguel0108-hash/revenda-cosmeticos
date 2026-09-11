@@ -8,6 +8,36 @@ function parseNumber(value) {
   return Number(value.replace(",", ".")) || 0;
 }
 
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024; // 5MB
+
+function extractStoragePath(photoUrl) {
+  if (!photoUrl) return null;
+  const marker = "/product-photos/";
+  const idx = photoUrl.indexOf(marker);
+  if (idx === -1) return null;
+  return photoUrl.slice(idx + marker.length);
+}
+
+async function uploadProductPhoto(supabase, file) {
+  if (!file || typeof file === "string" || !file.size) return { photo_url: null };
+
+  if (file.size > MAX_PHOTO_BYTES) {
+    return { error: "A foto precisa ter no máximo 5MB." };
+  }
+
+  const ext = (file.name?.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+  const path = `${crypto.randomUUID()}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("product-photos")
+    .upload(path, file, { contentType: file.type || undefined, upsert: false });
+
+  if (uploadError) return { error: uploadError.message };
+
+  const { data } = supabase.storage.from("product-photos").getPublicUrl(path);
+  return { photo_url: data.publicUrl };
+}
+
 export async function createProduct(formData) {
   const supabase = await createClient();
 
@@ -23,9 +53,21 @@ export async function createProduct(formData) {
 
   if (!name) return { error: "Informe o nome do produto." };
 
+  const photoFile = formData.get("photo");
+  const photoResult = await uploadProductPhoto(supabase, photoFile);
+  if (photoResult.error) return { error: photoResult.error };
+
   const { data, error } = await supabase
     .from("products")
-    .insert({ name, brand_id, cost, target_price, cycle, ready_for_delivery })
+    .insert({
+      name,
+      brand_id,
+      cost,
+      target_price,
+      cycle,
+      ready_for_delivery,
+      photo_url: photoResult.photo_url,
+    })
     .select("id")
     .single();
 
@@ -57,12 +99,43 @@ export async function updateProduct(id, formData) {
 
   if (!name) return { error: "Informe o nome do produto." };
 
+  const update = { name, brand_id, cost, target_price, cycle, ready_for_delivery };
+
+  const photoFile = formData.get("photo");
+  if (photoFile && typeof photoFile !== "string" && photoFile.size) {
+    const photoResult = await uploadProductPhoto(supabase, photoFile);
+    if (photoResult.error) return { error: photoResult.error };
+    update.photo_url = photoResult.photo_url;
+
+    const previousUrl = formData.get("previous_photo_url")?.toString();
+    const oldPath = extractStoragePath(previousUrl);
+    if (oldPath) {
+      await supabase.storage.from("product-photos").remove([oldPath]);
+    }
+  }
+
+  const { error } = await supabase.from("products").update(update).eq("id", id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/catalogo");
+  return { success: true };
+}
+
+export async function removeProductPhoto(id, currentPhotoUrl) {
+  const supabase = await createClient();
+
   const { error } = await supabase
     .from("products")
-    .update({ name, brand_id, cost, target_price, cycle, ready_for_delivery })
+    .update({ photo_url: null })
     .eq("id", id);
 
   if (error) return { error: error.message };
+
+  const oldPath = extractStoragePath(currentPhotoUrl);
+  if (oldPath) {
+    await supabase.storage.from("product-photos").remove([oldPath]);
+  }
 
   revalidatePath("/catalogo");
   return { success: true };

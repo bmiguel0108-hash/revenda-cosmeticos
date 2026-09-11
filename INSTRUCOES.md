@@ -1,6 +1,62 @@
 # Sistema de Revenda de Cosméticos
 
-## 🆕 Atualização — Parte 4 (logo)
+## 🆕 Atualização — Parte 5 (visual roxo/rosa, fotos e gráficos)
+
+Essa entrega traz o que você pediu depois de ver os dois modelos de layout:
+
+- **Cores novas em todo o sistema**: troquei a paleta rosa antiga por um roxo
+  com rosa (parecido com o segundo modelo que você mandou) — menu lateral,
+  botões, títulos, tudo.
+- **Catálogo de Produtos agora é em cards com foto**, não mais tabela: cada
+  produto aparece com a foto, nome, marca, preço, lucro/margem e o estoque,
+  parecido com o primeiro modelo que você mandou. Os botões de Editar,
+  Estoque, Ver preços e Desativar continuam lá, dentro de cada card.
+- **Fotos dos produtos**: agora dá para enviar uma foto ao cadastrar ou
+  editar um produto (campo "Foto do produto"). Ela fica guardada com
+  segurança no Supabase.
+- **Gráficos no Painel**: acompanhando vendas, custo e lucro dos últimos 30
+  dias em um gráfico, e o total a receber (saldo acumulado) em outro. Passe o
+  mouse (ou o dedo, no celular) sobre o gráfico para ver os valores de cada
+  dia; tem também um link "Ver como tabela" caso prefira números em vez de
+  gráfico.
+
+Ainda aguardando: os modelos de layout de telas específicas que você
+mencionou (além do Catálogo, que já foi feito) e o botão de WhatsApp — esse
+último fica guardado para quando construirmos a página pública de pedidos,
+como você pediu.
+
+### Passo 1 — Rodar o script de fotos no Supabase (novidade dessa vez)
+
+1. No Supabase, vá em **SQL Editor** → **New query**.
+2. Cole o conteúdo do arquivo `supabase/patch_2_fotos_produtos.sql` (está
+   dentro da pasta atualizada) e clique em **Run**.
+3. Isso cria o espaço de armazenamento das fotos e libera o campo de foto no
+   cadastro de produtos. Sem esse passo, o envio de foto não vai funcionar.
+
+### Passo 2 — Atualizar os arquivos no GitHub Desktop
+
+Mesmo fluxo de sempre: extraia a pasta nova, copie o conteúdo para dentro da
+pasta do repositório que o GitHub Desktop já reconhece (Repository → Show in
+Finder/Explorer), substituindo os arquivos existentes, depois commit (ex:
+"Parte 5 - visual roxo, fotos e gráficos") e **Push origin**. Não precisa
+mexer em nada no Vercel.
+
+### Passo 3 — Testar
+
+1. Confira se o menu lateral e as telas estão com as cores novas (roxo/rosa).
+2. Vá em **Catálogo de Produtos**, edite um produto e envie uma foto — confira
+   se ela aparece no card depois de salvar.
+3. Cadastre um produto novo já com foto.
+4. No **Painel**, confira os dois gráficos novos (vendas/custo/lucro e contas
+   a receber). Se ainda não tiver vendas recentes, os gráficos aparecem
+   "zerados" — é esperado, eles só mostram o que já foi cadastrado.
+
+Qualquer erro, me manda o print (e o que aparecer em vermelho no Console do
+navegador, se for erro de tela).
+
+---
+
+## Atualização — Parte 4 (logo)
 
 Coloquei a sua logo (BM Espaço Multimarcas) no menu lateral e na tela de
 login, além de deixá-la como ícone da aba do navegador. Mesmo fluxo de
@@ -108,7 +164,7 @@ navegador, se for erro de tela).
 - Login (só você acessa).
 - Configurações: formas de pagamento (taxa editável, multiplicador automático)
   e marcas.
-- Catálogo de Produtos: estoque, campo "pronto para entrega", tabela de
+- Catálogo de Produtos: cards com foto, estoque, campo "pronto para entrega",
   preços por forma de pagamento.
 - Nova Venda: escolha de cliente e produtos do catálogo com quantidade,
   cálculo automático de valor e baixa de estoque.
@@ -118,7 +174,8 @@ navegador, se for erro de tela).
 - Recebimentos: registro de pagamentos recebidos (entrada ou parcela).
 - Clientes: cadastro com telefone e histórico de compras.
 - Painel: resumo com vendas do mês, lucro do mês, total a receber, vendas
-  atrasadas, últimas vendas e produtos com estoque baixo.
+  atrasadas, gráficos de vendas/custo/lucro e contas a receber (últimos 30
+  dias), últimas vendas e produtos com estoque baixo.
 
 ## O que vem depois (fase futura, combinada desde o início)
 

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import ProductsTable from "@/components/catalogo/ProductsTable";
+import ProductGrid from "@/components/catalogo/ProductGrid";
 import NewProductForm from "@/components/catalogo/NewProductForm";
 
 export default async function CatalogoPage() {
@@ -34,7 +34,7 @@ export default async function CatalogoPage() {
 
       <NewProductForm brands={brands || []} />
 
-      <ProductsTable
+      <ProductGrid
         products={products || []}
         brands={brands || []}
         paymentMethods={paymentMethods || []}

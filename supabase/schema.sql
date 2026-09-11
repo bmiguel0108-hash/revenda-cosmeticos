@@ -60,6 +60,7 @@ create table products (
   ) stored,
   stock_quantity int not null default 0,
   ready_for_delivery boolean not null default false, -- usado futuramente no catálogo público
+  photo_url text, -- foto do produto (Supabase Storage, bucket product-photos)
   active boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -370,5 +371,31 @@ create policy "Usuário autenticado tem acesso total" on stock_movements for all
 create policy "Usuário autenticado tem acesso total" on sales for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 create policy "Usuário autenticado tem acesso total" on sale_items for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 create policy "Usuário autenticado tem acesso total" on payments for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+
+-- =====================================================================
+-- 13. FOTOS DOS PRODUTOS (Supabase Storage)
+-- =====================================================================
+-- Bucket público: qualquer pessoa com o link vê a foto (necessário para a
+-- futura página pública de catálogo), mas só um usuário autenticado pode
+-- enviar, trocar ou remover uma foto.
+insert into storage.buckets (id, name, public)
+values ('product-photos', 'product-photos', true)
+on conflict (id) do nothing;
+
+create policy "Leitura pública das fotos de produtos"
+on storage.objects for select
+using (bucket_id = 'product-photos');
+
+create policy "Usuário autenticado envia fotos de produtos"
+on storage.objects for insert
+with check (bucket_id = 'product-photos' and auth.role() = 'authenticated');
+
+create policy "Usuário autenticado atualiza fotos de produtos"
+on storage.objects for update
+using (bucket_id = 'product-photos' and auth.role() = 'authenticated');
+
+create policy "Usuário autenticado remove fotos de produtos"
+on storage.objects for delete
+using (bucket_id = 'product-photos' and auth.role() = 'authenticated');
 
 -- Fim do schema.

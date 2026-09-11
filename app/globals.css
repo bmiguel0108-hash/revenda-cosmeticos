@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 body {
-  background-color: #faf7f8;
-  color: #27191f;
+  background-color: #f8f6fc;
+  color: #241c33;
 }
 
 .card {
-  @apply bg-white rounded-xl border border-pink-100 shadow-sm p-5;
+  @apply bg-white rounded-xl border border-brand-100 shadow-sm p-5;
 }
 
 .btn-primary {

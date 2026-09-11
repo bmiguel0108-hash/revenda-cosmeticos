@@ -2,6 +2,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { formatMoney, formatDate } from "@/lib/format";
 import StatusBadge from "@/components/StatusBadge";
+import TrendChart from "@/components/dashboard/TrendChart";
+import { buildDashboardSeries } from "@/lib/dashboardSeries";
 
 function startOfMonthISO() {
   const now = new Date();
@@ -11,15 +13,23 @@ function startOfMonthISO() {
 export default async function PainelPage() {
   const supabase = await createClient();
 
-  const [{ data: sales }, { data: lowStock }] = await Promise.all([
-    supabase.from("vw_sales").select("*").order("sale_date", { ascending: false }),
-    supabase
-      .from("products")
-      .select("id, name, stock_quantity")
-      .eq("active", true)
-      .lte("stock_quantity", 3)
-      .order("stock_quantity"),
-  ]);
+  const [{ data: sales }, { data: lowStock }, { data: rawSales }, { data: rawPayments }] =
+    await Promise.all([
+      supabase.from("vw_sales").select("*").order("sale_date", { ascending: false }),
+      supabase
+        .from("products")
+        .select("id, name, stock_quantity")
+        .eq("active", true)
+        .lte("stock_quantity", 3)
+        .order("stock_quantity"),
+      supabase.from("sales").select("id, sale_date, final_value, total_cost, status"),
+      supabase.from("payments").select("sale_id, payment_date, amount"),
+    ]);
+
+  const trend = buildDashboardSeries(
+    { sales: rawSales || [], payments: rawPayments || [] },
+    30
+  );
 
   const allSales = sales || [];
   const monthStart = startOfMonthISO();
@@ -65,6 +75,25 @@ export default async function PainelPage() {
             ver contas a receber
           </Link>
         </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <TrendChart
+          title="Vendas, custo e lucro"
+          subtitle="Últimos 30 dias"
+          data={trend}
+          series={[
+            { key: "vendas", label: "Vendas", color: "#2a78d6" },
+            { key: "custo", label: "Custo", color: "#eb6834" },
+            { key: "lucro", label: "Lucro", color: "#1baf7a" },
+          ]}
+        />
+        <TrendChart
+          title="Contas a receber"
+          subtitle="Saldo acumulado — últimos 30 dias"
+          data={trend}
+          series={[{ key: "receivable", label: "A receber", color: "#2a78d6", area: true }]}
+        />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

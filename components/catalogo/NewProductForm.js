@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { createProduct } from "@/app/catalogo/actions";
 
 const initialState = {
@@ -17,10 +17,17 @@ export default function NewProductForm({ brands }) {
   const [form, setForm] = useState(initialState);
   const [error, setError] = useState("");
   const [open, setOpen] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState(null);
   const [isPending, startTransition] = useTransition();
+  const fileRef = useRef(null);
 
   function update(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
+  }
+
+  function handlePhotoChange(e) {
+    const file = e.target.files?.[0];
+    setPhotoPreview(file ? URL.createObjectURL(file) : null);
   }
 
   function handleSubmit(e) {
@@ -35,6 +42,9 @@ export default function NewProductForm({ brands }) {
         formData.set(key, value);
       }
     });
+    if (fileRef.current?.files?.[0]) {
+      formData.set("photo", fileRef.current.files[0]);
+    }
 
     startTransition(async () => {
       const result = await createProduct(formData);
@@ -42,6 +52,8 @@ export default function NewProductForm({ brands }) {
         setError(result.error);
       } else {
         setForm(initialState);
+        setPhotoPreview(null);
+        if (fileRef.current) fileRef.current.value = "";
         setOpen(false);
       }
     });
@@ -60,6 +72,25 @@ export default function NewProductForm({ brands }) {
       <h2 className="text-lg font-semibold text-gray-800 mb-4">Novo produto</h2>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="sm:col-span-2 lg:col-span-3 flex items-center gap-3">
+          <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-brand-100 bg-brand-50">
+            {photoPreview && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={photoPreview} alt="" className="h-full w-full object-cover" />
+            )}
+          </div>
+          <div>
+            <label className="label">Foto do produto (opcional)</label>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoChange}
+              className="block text-xs text-gray-500 file:mr-2 file:rounded-lg file:border-0 file:bg-brand-100 file:px-2 file:py-1 file:text-xs file:text-brand-700"
+            />
+          </div>
+        </div>
+
         <div>
           <label className="label">Produto</label>
           <input
@@ -148,6 +179,8 @@ export default function NewProductForm({ brands }) {
           onClick={() => {
             setOpen(false);
             setForm(initialState);
+            setPhotoPreview(null);
+            if (fileRef.current) fileRef.current.value = "";
           }}
         >
           Cancelar
