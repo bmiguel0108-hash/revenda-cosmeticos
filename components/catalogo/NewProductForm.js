@@ -10,6 +10,7 @@ const initialState = {
   target_price: "",
   cycle: "",
   initial_stock: "",
+  expiration_date: "",
   ready_for_delivery: false,
 };
 
@@ -154,6 +155,16 @@ export default function NewProductForm({ brands }) {
             value={form.initial_stock}
             onChange={(e) => update("initial_stock", e.target.value)}
             placeholder="0"
+          />
+        </div>
+
+        <div>
+          <label className="label">Data de vencimento (opcional)</label>
+          <input
+            type="date"
+            className="input"
+            value={form.expiration_date}
+            onChange={(e) => update("expiration_date", e.target.value)}
           />
         </div>
       </div>

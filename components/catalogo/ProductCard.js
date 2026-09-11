@@ -7,12 +7,29 @@ import {
   adjustStock,
   removeProductPhoto,
 } from "@/app/catalogo/actions";
+import { formatDate } from "@/lib/format";
 
 function formatMoney(value) {
   return Number(value || 0).toLocaleString("pt-BR", {
     style: "currency",
     currency: "BRL",
   });
+}
+
+function expirationInfo(expirationDate) {
+  if (!expirationDate) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const expDate = new Date(`${expirationDate}T00:00:00`);
+  const daysUntil = Math.round((expDate - today) / (1000 * 60 * 60 * 24));
+
+  if (daysUntil < 0) {
+    return { label: "vencido", className: "bg-red-50 text-red-600", urgent: true };
+  }
+  if (daysUntil <= 60) {
+    return { label: `vence em ${daysUntil}d`, className: "bg-amber-50 text-amber-700", urgent: true };
+  }
+  return { label: null, className: "text-gray-500", urgent: false };
 }
 
 function PhotoPlaceholder() {
@@ -90,10 +107,10 @@ function StockAdjustBox({ product, onClose }) {
 
 function PriceList({ product, paymentMethods }) {
   return (
-    <div className="mt-3 grid grid-cols-2 gap-2">
+    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
       {paymentMethods.map((pm) => (
         <div key={pm.id} className="rounded-lg border border-brand-100 bg-brand-50/40 px-2 py-1.5 text-xs">
-          <p className="text-gray-500 truncate">{pm.name}</p>
+          <p className="text-gray-500 break-words leading-snug">{pm.name}</p>
           <p className="font-semibold text-gray-800">
             {formatMoney(Number(product.target_price) * Number(pm.multiplier))}
           </p>
@@ -110,6 +127,7 @@ function EditForm({ product, brands, onClose }) {
     cost: String(product.cost),
     target_price: String(product.target_price),
     cycle: product.cycle ? String(product.cycle) : "",
+    expiration_date: product.expiration_date || "",
     ready_for_delivery: product.ready_for_delivery,
   });
   const [photoPreview, setPhotoPreview] = useState(null);
@@ -187,6 +205,15 @@ function EditForm({ product, brands, onClose }) {
         <input className="input" value={form.target_price} onChange={(e) => update("target_price", e.target.value)} placeholder="Venda Revista" />
       </div>
       <input className="input" value={form.cycle} onChange={(e) => update("cycle", e.target.value)} placeholder="Ciclo" />
+      <div>
+        <label className="label">Data de vencimento (opcional)</label>
+        <input
+          type="date"
+          className="input"
+          value={form.expiration_date}
+          onChange={(e) => update("expiration_date", e.target.value)}
+        />
+      </div>
       <label className="flex items-center gap-2 text-xs text-gray-700">
         <input
           type="checkbox"
@@ -219,6 +246,7 @@ export default function ProductCard({ product, brands, paymentMethods }) {
   const margin = product.target_price
     ? ((product.target_price - product.cost) / product.target_price) * 100
     : 0;
+  const expInfo = expirationInfo(product.expiration_date);
 
   function handleToggleActive() {
     startTransition(() => toggleProductActive(product.id, !product.active));
@@ -247,6 +275,11 @@ export default function ProductCard({ product, brands, paymentMethods }) {
                 <span className="badge bg-brand-600 text-white">pronta entrega</span>
               )}
             </div>
+            {expInfo?.urgent && (
+              <div className="absolute top-2 left-2">
+                <span className={`badge ${expInfo.className}`}>{expInfo.label}</span>
+              </div>
+            )}
             {product.photo_url && (
               <button
                 type="button"
@@ -266,6 +299,12 @@ export default function ProductCard({ product, brands, paymentMethods }) {
               {product.brands?.name || "Sem marca"}
               {product.cycle ? ` · Ciclo ${product.cycle}` : ""}
             </p>
+            {product.expiration_date && (
+              <p className={`text-xs mt-0.5 ${expInfo?.urgent ? expInfo.className.split(" ")[1] : "text-gray-400"}`}>
+                Validade: {formatDate(product.expiration_date)}
+                {expInfo?.urgent ? ` · ${expInfo.label}` : ""}
+              </p>
+            )}
 
             <div className="mt-2 flex items-baseline justify-between">
               <p className="text-lg font-semibold text-brand-700">{formatMoney(product.target_price)}</p>

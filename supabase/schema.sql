@@ -61,6 +61,7 @@ create table products (
   stock_quantity int not null default 0,
   ready_for_delivery boolean not null default false, -- usado futuramente no catálogo público
   photo_url text, -- foto do produto (Supabase Storage, bucket product-photos)
+  expiration_date date, -- data de vencimento (validade) do produto
   active boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()

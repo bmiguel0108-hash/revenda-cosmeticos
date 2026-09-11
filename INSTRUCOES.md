@@ -1,6 +1,44 @@
 # Sistema de Revenda de Cosméticos
 
-## 🆕 Atualização — Parte 5 (visual roxo/rosa, fotos e gráficos)
+## 🆕 Atualização — Parte 6 (data de vencimento e correção nos preços do celular)
+
+- **Data de vencimento do produto**: agora dá para informar a validade ao
+  cadastrar ou editar um produto (campo opcional "Data de vencimento"). Se o
+  produto estiver vencido, o card mostra um aviso vermelho "vencido"; se
+  faltar 60 dias ou menos, mostra um aviso amarelo "vence em Xd". A data
+  também aparece no card, logo abaixo da marca/ciclo.
+- **Correção no celular**: no card do produto, ao clicar em "Ver preços", o
+  nome da forma de pagamento estava sendo cortado (por isso não dava para ver
+  se era "2x", "3x" etc.). Corrigido — agora o nome completo sempre aparece,
+  quebrando em duas linhas se precisar, tanto no celular quanto no
+  computador.
+
+### Passo 1 — Rodar o script no Supabase (novidade dessa vez)
+
+1. No Supabase, vá em **SQL Editor** → **New query**.
+2. Cole o conteúdo do arquivo `supabase/patch_3_data_vencimento.sql` e
+   clique em **Run**.
+
+### Passo 2 — Atualizar os arquivos no GitHub Desktop
+
+Mesmo fluxo de sempre: extraia a pasta nova, copie o conteúdo para dentro da
+pasta do repositório (Repository → Show in Finder/Explorer), substituindo os
+arquivos existentes, commit (ex: "Parte 6 - data de vencimento") e **Push
+origin**. Sem mudanças no Vercel.
+
+### Passo 3 — Testar
+
+1. Edite um produto e informe uma data de vencimento — confira se o aviso
+   aparece certo (vencido / vence em breve / sem aviso quando está longe).
+2. Pelo celular, abra "Ver preços" em um produto e confira se agora dá para
+   ler o nome completo de cada forma de pagamento (Maquininha 2x, 3x, 4x,
+   etc.).
+
+Qualquer erro, me manda o print.
+
+---
+
+## Atualização — Parte 5 (visual roxo/rosa, fotos e gráficos)
 
 Essa entrega traz o que você pediu depois de ver os dois modelos de layout:
 

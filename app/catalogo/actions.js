@@ -8,6 +8,11 @@ function parseNumber(value) {
   return Number(value.replace(",", ".")) || 0;
 }
 
+function parseDate(value) {
+  const str = value?.toString().trim();
+  return str ? str : null;
+}
+
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024; // 5MB
 
 function extractStoragePath(photoUrl) {
@@ -50,6 +55,7 @@ export async function createProduct(formData) {
   const ready_for_delivery = formData.get("ready_for_delivery") === "on";
   const initialStockRaw = formData.get("initial_stock")?.toString().trim();
   const initialStock = initialStockRaw ? parseInt(initialStockRaw, 10) : 0;
+  const expiration_date = parseDate(formData.get("expiration_date"));
 
   if (!name) return { error: "Informe o nome do produto." };
 
@@ -67,6 +73,7 @@ export async function createProduct(formData) {
       cycle,
       ready_for_delivery,
       photo_url: photoResult.photo_url,
+      expiration_date,
     })
     .select("id")
     .single();
@@ -96,10 +103,11 @@ export async function updateProduct(id, formData) {
   const cycleRaw = formData.get("cycle")?.toString().trim();
   const cycle = cycleRaw ? parseInt(cycleRaw, 10) : null;
   const ready_for_delivery = formData.get("ready_for_delivery") === "on";
+  const expiration_date = parseDate(formData.get("expiration_date"));
 
   if (!name) return { error: "Informe o nome do produto." };
 
-  const update = { name, brand_id, cost, target_price, cycle, ready_for_delivery };
+  const update = { name, brand_id, cost, target_price, cycle, ready_for_delivery, expiration_date };
 
   const photoFile = formData.get("photo");
   if (photoFile && typeof photoFile !== "string" && photoFile.size) {
