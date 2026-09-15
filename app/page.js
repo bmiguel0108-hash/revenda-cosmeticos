@@ -2,34 +2,63 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { formatMoney, formatDate } from "@/lib/format";
 import StatusBadge from "@/components/StatusBadge";
-import TrendChart from "@/components/dashboard/TrendChart";
-import { buildDashboardSeries } from "@/lib/dashboardSeries";
+import ProductProfitChart from "@/components/dashboard/ProductProfitChart";
+import { buildProductProfitRanking } from "@/lib/productProfit";
 
 function startOfMonthISO() {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
 }
 
+function addDaysISO(days) {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+// Rótulo/urgência da validade — mesma ideia do card do Catálogo, mas com uma
+// janela de 30 dias (mais curta) para esse alerta do Painel.
+function expirationAlert(expirationDate) {
+  if (!expirationDate) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const expDate = new Date(`${expirationDate}T00:00:00`);
+  const daysUntil = Math.round((expDate - today) / (1000 * 60 * 60 * 24));
+  if (daysUntil > 30) return null;
+  if (daysUntil < 0) return { label: "vencido", className: "bg-red-50 text-red-600", priority: 0 };
+  return { label: `vence em ${daysUntil}d`, className: "bg-amber-50 text-amber-700", priority: 2 };
+}
+
 export default async function PainelPage() {
   const supabase = await createClient();
+  const in30Days = addDaysISO(30);
 
-  const [{ data: sales }, { data: lowStock }, { data: rawSales }, { data: rawPayments }] =
-    await Promise.all([
-      supabase.from("vw_sales").select("*").order("sale_date", { ascending: false }),
-      supabase
-        .from("products")
-        .select("id, name, stock_quantity")
-        .eq("active", true)
-        .lte("stock_quantity", 3)
-        .order("stock_quantity"),
-      supabase.from("sales").select("id, sale_date, final_value, total_cost, status"),
-      supabase.from("payments").select("sale_id, payment_date, amount"),
-    ]);
+  const [{ data: sales }, { data: alertProducts }, { data: saleItems }] = await Promise.all([
+    supabase.from("vw_sales").select("*").order("sale_date", { ascending: false }),
+    supabase
+      .from("products")
+      .select("id, name, stock_quantity, expiration_date")
+      .eq("active", true)
+      .or(`stock_quantity.lt.2,expiration_date.lte.${in30Days}`),
+    supabase
+      .from("sale_items")
+      .select("product_id, quantity, unit_cost, unit_price, products(name), sales(status)"),
+  ]);
 
-  const trend = buildDashboardSeries(
-    { sales: rawSales || [], payments: rawPayments || [] },
-    30
-  );
+  const productProfit = buildProductProfitRanking(saleItems || []);
+
+  const stockAndExpiryAlerts = (alertProducts || [])
+    .map((p) => {
+      const lowStock = p.stock_quantity < 2;
+      const expiry = expirationAlert(p.expiration_date);
+      return { ...p, lowStock, expiry };
+    })
+    .filter((p) => p.lowStock || p.expiry)
+    .sort((a, b) => {
+      const priority = (p) => (p.expiry ? p.expiry.priority : p.lowStock ? 1 : 3);
+      return priority(a) - priority(b) || a.stock_quantity - b.stock_quantity;
+    });
 
   const allSales = sales || [];
   const monthStart = startOfMonthISO();
@@ -77,24 +106,11 @@ export default async function PainelPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <TrendChart
-          title="Vendas, custo e lucro"
-          subtitle="Últimos 30 dias"
-          data={trend}
-          series={[
-            { key: "vendas", label: "Vendas", color: "#2a78d6" },
-            { key: "custo", label: "Custo", color: "#eb6834" },
-            { key: "lucro", label: "Lucro", color: "#1baf7a" },
-          ]}
-        />
-        <TrendChart
-          title="Contas a receber"
-          subtitle="Saldo acumulado — últimos 30 dias"
-          data={trend}
-          series={[{ key: "receivable", label: "A receber", color: "#2a78d6", area: true }]}
-        />
-      </div>
+      <ProductProfitChart
+        title="Lucro por produto vendido"
+        subtitle="Total geral, do maior para o menor"
+        data={productProfit}
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="card overflow-x-auto">
@@ -134,35 +150,54 @@ export default async function PainelPage() {
         </section>
 
         <section className="card overflow-x-auto">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Estoque baixo</h2>
-          <table className="table-base min-w-[280px]">
+          <h2 className="text-lg font-semibold text-gray-800 mb-1">
+            Alertas: Estoque Baixo e Vencimento
+          </h2>
+          <p className="text-xs text-gray-500 mb-4">
+            Menos de 2 unidades em estoque, ou vencimento em até 30 dias.
+          </p>
+          <table className="table-base min-w-[320px]">
             <thead>
               <tr>
                 <th>Produto</th>
                 <th>Estoque</th>
+                <th>Validade</th>
               </tr>
             </thead>
             <tbody>
-              {(lowStock || []).map((p) => (
+              {stockAndExpiryAlerts.map((p) => (
                 <tr key={p.id}>
                   <td className="text-gray-700">{p.name}</td>
                   <td>
-                    <span
-                      className={`badge ${
-                        p.stock_quantity <= 0
-                          ? "bg-red-50 text-red-600"
-                          : "bg-amber-50 text-amber-700"
-                      }`}
-                    >
-                      {p.stock_quantity} un.
-                    </span>
+                    {p.lowStock ? (
+                      <span
+                        className={`badge ${
+                          p.stock_quantity <= 0
+                            ? "bg-red-50 text-red-600"
+                            : "bg-amber-50 text-amber-700"
+                        }`}
+                      >
+                        {p.stock_quantity} un.
+                      </span>
+                    ) : (
+                      <span className="text-gray-400">{p.stock_quantity} un.</span>
+                    )}
+                  </td>
+                  <td>
+                    {p.expiry ? (
+                      <span className={`badge ${p.expiry.className}`}>{p.expiry.label}</span>
+                    ) : (
+                      <span className="text-gray-400">
+                        {p.expiration_date ? formatDate(p.expiration_date) : "—"}
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}
-              {(!lowStock || lowStock.length === 0) && (
+              {stockAndExpiryAlerts.length === 0 && (
                 <tr>
-                  <td colSpan={2} className="text-center text-gray-400 py-6">
-                    Nenhum produto com estoque baixo.
+                  <td colSpan={3} className="text-center text-gray-400 py-6">
+                    Nenhum alerta de estoque ou vencimento no momento.
                   </td>
                 </tr>
               )}

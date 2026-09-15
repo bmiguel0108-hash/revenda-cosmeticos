@@ -1,6 +1,41 @@
 # Sistema de Revenda de Cosméticos
 
-## 🆕 Atualização — Parte 6 (data de vencimento e correção nos preços do celular)
+## 🆕 Atualização — Parte 7 (lucro por produto, lucro por cliente e alertas)
+
+- **Os dois gráficos do Painel saíram**. No lugar deles agora tem **"Lucro
+  por produto vendido"**: uma barra por produto (do maior lucro para o
+  menor), mostrando o quanto cada um já rendeu no total. Tem um link "Ver
+  como tabela" para ver os números com quantidade vendida incluída.
+- **Lucro por cliente**: em **Clientes**, ao clicar em "Ver histórico", cada
+  venda agora mostra também o lucro daquela venda (coluna "Lucro"), e a
+  linha do cliente mostra o lucro total já gerado por ele, junto do total
+  comprado.
+- **Alerta de Estoque Baixo e Vencimento**: o quadro que antes só mostrava
+  estoque baixo agora junta as duas coisas — produtos com **menos de 2
+  unidades** em estoque e produtos que **vencem nos próximos 30 dias** (ou já
+  venceram), tudo em uma lista só, com avisos coloridos.
+- O **Resumo Financeiro do Mês** (vendas do mês e lucro do mês) já existia
+  nos cartões do topo do Painel — continua lá, sem mudanças.
+
+### Passo 1 — Atualizar os arquivos no GitHub Desktop
+
+Sem novidade no Supabase dessa vez. Fluxo de sempre: extraia a pasta nova,
+copie o conteúdo para dentro da pasta do repositório (Repository → Show in
+Finder/Explorer), substituindo os arquivos existentes, commit (ex: "Parte 7 -
+lucro por produto e por cliente, alertas") e **Push origin**.
+
+### Passo 2 — Testar
+
+1. No **Painel**, confira o novo quadro "Lucro por produto vendido" (se você
+   já tem vendas registradas) e o quadro de alertas de estoque/vencimento.
+2. Em **Clientes**, abra "Ver histórico" de um cliente com compras e confira
+   se aparece o lucro de cada venda e o lucro total dele.
+
+Qualquer erro, me manda o print.
+
+---
+
+## Atualização — Parte 6 (data de vencimento e correção nos preços do celular)
 
 - **Data de vencimento do produto**: agora dá para informar a validade ao
   cadastrar ou editar um produto (campo opcional "Data de vencimento"). Se o

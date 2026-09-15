@@ -10,7 +10,7 @@ export default async function ClientesPage() {
     supabase
       .from("vw_sales")
       .select(
-        "id, sale_number, sale_date, customer_id, final_value, balance_due, display_status, payment_method_name"
+        "id, sale_number, sale_date, customer_id, final_value, balance_due, profit, display_status, payment_method_name"
       )
       .order("sale_date", { ascending: false }),
   ]);

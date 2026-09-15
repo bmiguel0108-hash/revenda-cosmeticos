@@ -26,6 +26,7 @@ function HistoryRow({ sales }) {
               <th>Data</th>
               <th>Forma</th>
               <th>Valor</th>
+              <th>Lucro</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -36,6 +37,9 @@ function HistoryRow({ sales }) {
                 <td>{formatDate(s.sale_date)}</td>
                 <td className="text-gray-500">{s.payment_method_name}</td>
                 <td>{formatMoney(s.final_value)}</td>
+                <td className={Number(s.profit) < 0 ? "text-red-600" : "text-emerald-700"}>
+                  {s.display_status === "cancelado" ? "—" : formatMoney(s.profit)}
+                </td>
                 <td>
                   <StatusBadge status={s.display_status} />
                 </td>
@@ -79,7 +83,9 @@ function CustomerRow({ customer, sales }) {
   }
 
   const customerSales = sales.filter((s) => s.customer_id === customer.id);
-  const totalSpent = customerSales.reduce((sum, s) => sum + Number(s.final_value), 0);
+  const activeSales = customerSales.filter((s) => s.display_status !== "cancelado");
+  const totalSpent = activeSales.reduce((sum, s) => sum + Number(s.final_value), 0);
+  const totalProfit = activeSales.reduce((sum, s) => sum + Number(s.profit), 0);
   const lastPurchase = customerSales[0]?.sale_date;
 
   if (editing) {
@@ -108,7 +114,11 @@ function CustomerRow({ customer, sales }) {
       <tr>
         <td className="font-medium text-gray-800">{customer.name}</td>
         <td className="text-gray-500">{customer.phone || "—"}</td>
-        <td className="text-gray-500">{formatMoney(totalSpent)} em {customerSales.length} compra(s)</td>
+        <td className="text-gray-500">
+          {formatMoney(totalSpent)} em {activeSales.length} compra(s)
+          <br />
+          <span className="text-xs text-emerald-700">lucro {formatMoney(totalProfit)}</span>
+        </td>
         <td className="text-gray-500">{lastPurchase ? formatDate(lastPurchase) : "—"}</td>
         <td className="space-x-2 whitespace-nowrap">
           <button className="btn-secondary" onClick={() => setEditing(true)}>Editar</button>
