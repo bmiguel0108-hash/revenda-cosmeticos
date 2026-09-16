@@ -98,3 +98,52 @@ export async function toggleBrandActive(id, active) {
   revalidatePath("/configuracoes");
   return { success: true };
 }
+
+// ---------- Categorias ----------
+
+export async function createCategory(formData) {
+  const supabase = await createClient();
+  const name = formData.get("name")?.toString().trim();
+
+  if (!name) return { error: "Informe o nome da categoria." };
+
+  const { error } = await supabase.from("categories").insert({ name });
+
+  if (error) {
+    if (error.code === "23505") return { error: "Já existe uma categoria com esse nome." };
+    return { error: error.message };
+  }
+
+  revalidatePath("/configuracoes");
+  revalidatePath("/catalogo");
+  return { success: true };
+}
+
+export async function updateCategory(id, formData) {
+  const supabase = await createClient();
+  const name = formData.get("name")?.toString().trim();
+
+  if (!name) return { error: "Informe o nome da categoria." };
+
+  const { error } = await supabase.from("categories").update({ name }).eq("id", id);
+
+  if (error) {
+    if (error.code === "23505") return { error: "Já existe uma categoria com esse nome." };
+    return { error: error.message };
+  }
+
+  revalidatePath("/configuracoes");
+  revalidatePath("/catalogo");
+  return { success: true };
+}
+
+export async function deleteCategory(id) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("categories").delete().eq("id", id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/configuracoes");
+  revalidatePath("/catalogo");
+  return { success: true };
+}

@@ -8,7 +8,7 @@ export default async function VendasPage() {
     supabase.from("vw_sales").select("*").order("sale_date", { ascending: false }),
     supabase
       .from("sale_items")
-      .select("id, sale_id, quantity, unit_cost, unit_price, products(name)")
+      .select("id, sale_id, quantity, unit_cost, unit_price, combo_id, combo_name, products(name)")
       .order("created_at"),
   ]);
 

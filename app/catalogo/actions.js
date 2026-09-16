@@ -13,6 +13,24 @@ function parseDate(value) {
   return str ? str : null;
 }
 
+function parseCategoryIds(value) {
+  try {
+    const parsed = JSON.parse(value?.toString() || "[]");
+    return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+  } catch {
+    return [];
+  }
+}
+
+async function syncProductCategories(supabase, productId, categoryIds) {
+  await supabase.from("product_categories").delete().eq("product_id", productId);
+  if (categoryIds.length > 0) {
+    await supabase
+      .from("product_categories")
+      .insert(categoryIds.map((category_id) => ({ product_id: productId, category_id })));
+  }
+}
+
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024; // 5MB
 
 function extractStoragePath(photoUrl) {
@@ -56,6 +74,7 @@ export async function createProduct(formData) {
   const initialStockRaw = formData.get("initial_stock")?.toString().trim();
   const initialStock = initialStockRaw ? parseInt(initialStockRaw, 10) : 0;
   const expiration_date = parseDate(formData.get("expiration_date"));
+  const categoryIds = parseCategoryIds(formData.get("category_ids"));
 
   if (!name) return { error: "Informe o nome do produto." };
 
@@ -89,6 +108,10 @@ export async function createProduct(formData) {
     });
   }
 
+  if (categoryIds.length > 0) {
+    await syncProductCategories(supabase, data.id, categoryIds);
+  }
+
   revalidatePath("/catalogo");
   return { success: true };
 }
@@ -104,6 +127,7 @@ export async function updateProduct(id, formData) {
   const cycle = cycleRaw ? parseInt(cycleRaw, 10) : null;
   const ready_for_delivery = formData.get("ready_for_delivery") === "on";
   const expiration_date = parseDate(formData.get("expiration_date"));
+  const categoryIds = parseCategoryIds(formData.get("category_ids"));
 
   if (!name) return { error: "Informe o nome do produto." };
 
@@ -125,6 +149,10 @@ export async function updateProduct(id, formData) {
   const { error } = await supabase.from("products").update(update).eq("id", id);
 
   if (error) return { error: error.message };
+
+  if (formData.has("category_ids")) {
+    await syncProductCategories(supabase, id, categoryIds);
+  }
 
   revalidatePath("/catalogo");
   return { success: true };

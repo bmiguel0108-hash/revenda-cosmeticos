@@ -1,6 +1,71 @@
 # Sistema de Revenda de Cosméticos
 
-## 🆕 Atualização — Parte 7 (lucro por produto, lucro por cliente e alertas)
+## 🆕 Atualização — Parte 8 (categorias e combos)
+
+- **Categorias no Catálogo**: agora dá para marcar cada produto com uma ou
+  mais categorias (Maquiagem, Perfumaria, Kit/Combo, Cabelos, Cuidados para
+  Pele, Corpo e Banho já vêm cadastradas). Um produto pode ter várias
+  categorias ao mesmo tempo — por exemplo, um hidratante pode ser "Corpo e
+  Banho" e "Cuidados para Pele" juntos. As categorias aparecem como
+  etiquetas no card do produto, e no topo do Catálogo tem chips para
+  filtrar os produtos por categoria. As categorias em si são gerenciadas em
+  **Configurações** (criar, renomear, excluir), igual já funciona com as
+  marcas.
+- **Combos**: uma nova aba **"Combos"** dentro do Catálogo permite montar um
+  kit com 2 ou mais produtos do seu catálogo (ex: Body Splash + Hidratante),
+  informando o **preço final do combo** que você quer cobrar. O card do
+  combo mostra os produtos que o compõem, o preço somado individual, a
+  economia do cliente e o lucro real do combo (baseado no custo de cada
+  produto). Dá para editar, ativar/desativar e excluir um combo a qualquer
+  momento.
+- **Vender o combo direto em Nova Venda**: na tela de Nova Venda agora tem
+  um seletor de combos — ao adicionar um combo à venda, o sistema já baixa o
+  estoque de todos os produtos que compõem o combo automaticamente, sem
+  precisar adicionar cada produto separado. O preço do combo é repartido
+  entre os produtos internamente (só para os cálculos de lucro), mas para
+  você é só um item na venda, com uma etiqueta roxa "combo" mostrando quais
+  produtos entraram nele.
+- **Em Vendas → "Ver itens"**: os produtos que vieram de um combo aparecem
+  marcados com uma etiqueta "combo: [nome do combo]", para você identificar
+  na hora que precisar.
+
+### Passo 1 — Rodar o script no Supabase (novidade dessa vez)
+
+1. No Supabase, vá em **SQL Editor** → **New query**.
+2. Cole o conteúdo do arquivo `supabase/patch_4_categorias_e_combos.sql` e
+   clique em **Run**.
+3. Isso cria as tabelas de categorias e combos, já com as 6 categorias
+   sugeridas cadastradas, e libera os campos necessários para combos nas
+   vendas. Sem esse passo, as telas novas não vão funcionar.
+
+### Passo 2 — Atualizar os arquivos no GitHub Desktop
+
+Fluxo de sempre: extraia a pasta nova, copie o conteúdo para dentro da
+pasta do repositório (Repository → Show in Finder/Explorer), substituindo
+os arquivos existentes, commit (ex: "Parte 8 - categorias e combos") e
+**Push origin**. Sem mudanças no Vercel.
+
+### Passo 3 — Testar
+
+1. Em **Configurações**, confira se as 6 categorias já aparecem prontas
+   (pode criar outras se quiser).
+2. No **Catálogo**, edite um produto e marque 2 categorias para ele — salve
+   e confira se as etiquetas aparecem no card.
+3. Use os chips de filtro no topo do Catálogo para filtrar por uma
+   categoria.
+4. Na aba **Combos** do Catálogo, crie um combo com 2 produtos e um preço
+   final (ex: um pouco menor que a soma dos dois) — confira se o card
+   mostra a economia e o lucro certos.
+5. Em **Nova Venda**, escolha esse combo, finalize a venda e confira em
+   **Catálogo** se o estoque dos dois produtos baixou sozinho.
+6. Em **Vendas**, clique em "Ver itens" dessa venda e confira se os dois
+   produtos aparecem marcados com a etiqueta do combo.
+
+Qualquer erro, me manda o print.
+
+---
+
+## Atualização — Parte 7 (lucro por produto, lucro por cliente e alertas)
 
 - **Os dois gráficos do Painel saíram**. No lugar deles agora tem **"Lucro
   por produto vendido"**: uma barra por produto (do maior lucro para o

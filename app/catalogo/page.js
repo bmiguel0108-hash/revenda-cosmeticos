@@ -1,23 +1,49 @@
 import { createClient } from "@/lib/supabase/server";
-import ProductGrid from "@/components/catalogo/ProductGrid";
-import NewProductForm from "@/components/catalogo/NewProductForm";
+import CatalogTabs from "@/components/catalogo/CatalogTabs";
+import { comboDerived } from "@/lib/combos";
 
 export default async function CatalogoPage() {
   const supabase = await createClient();
 
-  const [{ data: products }, { data: brands }, { data: paymentMethods }] =
-    await Promise.all([
-      supabase
-        .from("products")
-        .select("*, brands(id, name)")
-        .order("name"),
-      supabase.from("brands").select("*").eq("active", true).order("name"),
-      supabase
-        .from("payment_methods")
-        .select("*")
-        .eq("active", true)
-        .order("sort_order"),
-    ]);
+  const [
+    { data: products },
+    { data: brands },
+    { data: paymentMethods },
+    { data: categories },
+    { data: combosRaw },
+  ] = await Promise.all([
+    supabase
+      .from("products")
+      .select("*, brands(id, name), product_categories(category_id)")
+      .order("name"),
+    supabase.from("brands").select("*").eq("active", true).order("name"),
+    supabase
+      .from("payment_methods")
+      .select("*")
+      .eq("active", true)
+      .order("sort_order"),
+    supabase.from("categories").select("*").order("sort_order"),
+    supabase
+      .from("combos")
+      .select(
+        "*, combo_items(id, product_id, quantity, products(id, name, cost, target_price, stock_quantity, photo_url))"
+      )
+      .order("name"),
+  ]);
+
+  const productsWithCategories = (products || []).map((p) => ({
+    ...p,
+    category_ids: (p.product_categories || []).map((pc) => pc.category_id),
+  }));
+
+  const combos = (combosRaw || []).map((combo) => {
+    const items = (combo.combo_items || []).map((ci) => ({
+      product_id: ci.product_id,
+      quantity: ci.quantity,
+      product: ci.products,
+    }));
+    return { ...combo, items, ...comboDerived(combo, items) };
+  });
 
   return (
     <div className="space-y-6">
@@ -32,12 +58,12 @@ export default async function CatalogoPage() {
         </p>
       </div>
 
-      <NewProductForm brands={brands || []} />
-
-      <ProductGrid
-        products={products || []}
+      <CatalogTabs
+        products={productsWithCategories}
         brands={brands || []}
         paymentMethods={paymentMethods || []}
+        categories={categories || []}
+        combos={combos}
       />
     </div>
   );

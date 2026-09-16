@@ -120,7 +120,7 @@ function PriceList({ product, paymentMethods }) {
   );
 }
 
-function EditForm({ product, brands, onClose }) {
+function EditForm({ product, brands, categories, onClose }) {
   const [form, setForm] = useState({
     name: product.name,
     brand_id: product.brand_id || "",
@@ -130,6 +130,7 @@ function EditForm({ product, brands, onClose }) {
     expiration_date: product.expiration_date || "",
     ready_for_delivery: product.ready_for_delivery,
   });
+  const [categoryIds, setCategoryIds] = useState(product.category_ids || []);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -137,6 +138,10 @@ function EditForm({ product, brands, onClose }) {
 
   function update(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
+  }
+
+  function toggleCategory(id) {
+    setCategoryIds((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]));
   }
 
   function handlePhotoChange(e) {
@@ -163,6 +168,7 @@ function EditForm({ product, brands, onClose }) {
       formData.set("photo", fileRef.current.files[0]);
       formData.set("previous_photo_url", product.photo_url || "");
     }
+    formData.set("category_ids", JSON.stringify(categoryIds));
 
     startTransition(async () => {
       const result = await updateProduct(product.id, formData);
@@ -223,6 +229,32 @@ function EditForm({ product, brands, onClose }) {
         Pronto para entrega
       </label>
 
+      {categories.length > 0 && (
+        <div>
+          <label className="label">Categorias</label>
+          <div className="flex flex-wrap gap-2">
+            {categories.map((c) => (
+              <label
+                key={c.id}
+                className={`badge cursor-pointer transition ${
+                  categoryIds.includes(c.id)
+                    ? "bg-brand-600 text-white"
+                    : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  className="hidden"
+                  checked={categoryIds.includes(c.id)}
+                  onChange={() => toggleCategory(c.id)}
+                />
+                {c.name}
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
       {error && <p className="text-xs text-red-600">{error}</p>}
 
       <div className="flex gap-2 pt-1">
@@ -237,7 +269,7 @@ function EditForm({ product, brands, onClose }) {
   );
 }
 
-export default function ProductCard({ product, brands, paymentMethods }) {
+export default function ProductCard({ product, brands, paymentMethods, categories = [] }) {
   const [editing, setEditing] = useState(false);
   const [showStockBox, setShowStockBox] = useState(false);
   const [showPrices, setShowPrices] = useState(false);
@@ -259,7 +291,7 @@ export default function ProductCard({ product, brands, paymentMethods }) {
   return (
     <div className={`card flex flex-col p-4 ${!product.active ? "opacity-50" : ""}`}>
       {editing ? (
-        <EditForm product={product} brands={brands} onClose={() => setEditing(false)} />
+        <EditForm product={product} brands={brands} categories={categories} onClose={() => setEditing(false)} />
       ) : (
         <>
           <div className="relative aspect-square w-full overflow-hidden rounded-lg">
@@ -304,6 +336,19 @@ export default function ProductCard({ product, brands, paymentMethods }) {
                 Validade: {formatDate(product.expiration_date)}
                 {expInfo?.urgent ? ` · ${expInfo.label}` : ""}
               </p>
+            )}
+            {product.category_ids?.length > 0 && (
+              <div className="mt-1 flex flex-wrap gap-1">
+                {product.category_ids.map((id) => {
+                  const cat = categories.find((c) => c.id === id);
+                  if (!cat) return null;
+                  return (
+                    <span key={id} className="badge bg-gray-100 text-gray-600 text-[10px]">
+                      {cat.name}
+                    </span>
+                  );
+                })}
+              </div>
             )}
 
             <div className="mt-2 flex items-baseline justify-between">

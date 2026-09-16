@@ -10,7 +10,7 @@ function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
-export default function NovaVendaForm({ products, customers, paymentMethods }) {
+export default function NovaVendaForm({ products, combos = [], customers, paymentMethods }) {
   const router = useRouter();
 
   const [localCustomers, setLocalCustomers] = useState(customers);
@@ -23,6 +23,8 @@ export default function NovaVendaForm({ products, customers, paymentMethods }) {
   const [cart, setCart] = useState([]);
   const [selectedProductId, setSelectedProductId] = useState("");
   const [qtyToAdd, setQtyToAdd] = useState("1");
+  const [selectedComboId, setSelectedComboId] = useState("");
+  const [comboQtyToAdd, setComboQtyToAdd] = useState("1");
 
   const [paymentMethodId, setPaymentMethodId] = useState(paymentMethods[0]?.id || "");
   const [saleDate, setSaleDate] = useState(todayISO());
@@ -36,6 +38,7 @@ export default function NovaVendaForm({ products, customers, paymentMethods }) {
   const [isAddingCustomer, startAddingCustomer] = useTransition();
 
   const productMap = useMemo(() => new Map(products.map((p) => [p.id, p])), [products]);
+  const comboMap = useMemo(() => new Map(combos.map((c) => [c.id, c])), [combos]);
 
   const baseValue = cart.reduce((sum, item) => sum + item.unit_price * item.quantity, 0);
   const totalCost = cart.reduce((sum, item) => sum + item.unit_cost * item.quantity, 0);
@@ -49,14 +52,16 @@ export default function NovaVendaForm({ products, customers, paymentMethods }) {
     installmentsNumber > 0 ? (finalValue - downPaymentNumber) / installmentsNumber : 0;
   const profit = finalValue - totalCost;
 
-  function handleAddItem() {
+  function handleAddProduct() {
     if (!selectedProductId) return;
     const product = productMap.get(selectedProductId);
     if (!product) return;
     const qty = parseInt(qtyToAdd, 10) || 1;
 
     setCart((prev) => {
-      const existingIndex = prev.findIndex((i) => i.product_id === selectedProductId);
+      const existingIndex = prev.findIndex(
+        (i) => i.kind === "product" && i.product_id === selectedProductId
+      );
       if (existingIndex >= 0) {
         const copy = [...prev];
         copy[existingIndex] = {
@@ -68,6 +73,7 @@ export default function NovaVendaForm({ products, customers, paymentMethods }) {
       return [
         ...prev,
         {
+          kind: "product",
           product_id: product.id,
           name: product.name,
           quantity: qty,
@@ -79,6 +85,42 @@ export default function NovaVendaForm({ products, customers, paymentMethods }) {
     });
     setSelectedProductId("");
     setQtyToAdd("1");
+  }
+
+  function handleAddCombo() {
+    if (!selectedComboId) return;
+    const combo = comboMap.get(selectedComboId);
+    if (!combo) return;
+    const qty = parseInt(comboQtyToAdd, 10) || 1;
+
+    setCart((prev) => {
+      const existingIndex = prev.findIndex(
+        (i) => i.kind === "combo" && i.combo_id === selectedComboId
+      );
+      if (existingIndex >= 0) {
+        const copy = [...prev];
+        copy[existingIndex] = {
+          ...copy[existingIndex],
+          quantity: copy[existingIndex].quantity + qty,
+        };
+        return copy;
+      }
+      return [
+        ...prev,
+        {
+          kind: "combo",
+          combo_id: combo.id,
+          name: combo.name,
+          quantity: qty,
+          unit_cost: Number(combo.totalCost),
+          unit_price: Number(combo.target_price),
+          stock_quantity: combo.availableStock,
+          components: combo.items,
+        },
+      ];
+    });
+    setSelectedComboId("");
+    setComboQtyToAdd("1");
   }
 
   function handleRemoveItem(index) {
@@ -138,7 +180,13 @@ export default function NovaVendaForm({ products, customers, paymentMethods }) {
     formData.set("notes", notes);
     formData.set(
       "items",
-      JSON.stringify(cart.map((i) => ({ product_id: i.product_id, quantity: i.quantity })))
+      JSON.stringify(
+        cart.map((i) =>
+          i.kind === "combo"
+            ? { kind: "combo", combo_id: i.combo_id, quantity: i.quantity }
+            : { kind: "product", product_id: i.product_id, quantity: i.quantity }
+        )
+      )
     );
 
     startTransition(async () => {
@@ -257,17 +305,48 @@ export default function NovaVendaForm({ products, customers, paymentMethods }) {
                 onChange={(e) => setQtyToAdd(e.target.value)}
               />
             </div>
-            <button type="button" className="btn-primary" onClick={handleAddItem}>
+            <button type="button" className="btn-primary" onClick={handleAddProduct}>
               Adicionar item
             </button>
           </div>
+
+          {combos.length > 0 && (
+            <div className="flex flex-wrap items-end gap-2 mb-4 pt-4 border-t border-gray-100">
+              <div className="flex-1 min-w-[220px]">
+                <label className="label">Combo</label>
+                <select
+                  className="input"
+                  value={selectedComboId}
+                  onChange={(e) => setSelectedComboId(e.target.value)}
+                >
+                  <option value="">— Selecione um combo —</option>
+                  {combos.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} ({c.availableStock} possível(is)) — {formatMoney(c.target_price)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="label">Qtd.</label>
+                <input
+                  className="input w-20"
+                  value={comboQtyToAdd}
+                  onChange={(e) => setComboQtyToAdd(e.target.value)}
+                />
+              </div>
+              <button type="button" className="btn-primary" onClick={handleAddCombo}>
+                Adicionar combo
+              </button>
+            </div>
+          )}
 
           {cart.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="table-base">
                 <thead>
                   <tr>
-                    <th>Produto</th>
+                    <th>Item</th>
                     <th>Qtd.</th>
                     <th>Preço-alvo (un.)</th>
                     <th>Subtotal</th>
@@ -276,13 +355,21 @@ export default function NovaVendaForm({ products, customers, paymentMethods }) {
                 </thead>
                 <tbody>
                   {cart.map((item, index) => (
-                    <tr key={item.product_id}>
+                    <tr key={`${item.kind}-${item.product_id || item.combo_id}`}>
                       <td className="font-medium text-gray-800">
+                        {item.kind === "combo" && (
+                          <span className="badge bg-brand-600 text-white mr-1">combo</span>
+                        )}
                         {item.name}
                         {item.quantity > item.stock_quantity && (
                           <span className="badge bg-amber-50 text-amber-700 ml-2">
                             estoque insuficiente ({item.stock_quantity})
                           </span>
+                        )}
+                        {item.kind === "combo" && (
+                          <p className="text-xs font-normal text-gray-400 mt-0.5">
+                            {item.components.map((c) => `${c.quantity}x ${c.product?.name}`).join(" + ")}
+                          </p>
                         )}
                       </td>
                       <td>

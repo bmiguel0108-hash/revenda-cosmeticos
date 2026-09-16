@@ -399,4 +399,66 @@ create policy "Usuário autenticado remove fotos de produtos"
 on storage.objects for delete
 using (bucket_id = 'product-photos' and auth.role() = 'authenticated');
 
+-- =====================================================================
+-- 14. CATEGORIAS (um produto pode ter mais de uma)
+-- =====================================================================
+create table categories (
+  id uuid primary key default gen_random_uuid(),
+  name text not null unique,
+  sort_order int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create table product_categories (
+  product_id uuid not null references products(id) on delete cascade,
+  category_id uuid not null references categories(id) on delete cascade,
+  primary key (product_id, category_id)
+);
+
+alter table categories enable row level security;
+alter table product_categories enable row level security;
+
+create policy "Usuário autenticado tem acesso total" on categories for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+create policy "Usuário autenticado tem acesso total" on product_categories for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+
+insert into categories (name, sort_order) values
+  ('Maquiagem', 1),
+  ('Perfumaria', 2),
+  ('Kit/Combo', 3),
+  ('Cabelos', 4),
+  ('Cuidados para Pele', 5),
+  ('Corpo e Banho', 6);
+
+-- =====================================================================
+-- 15. COMBOS (2 ou mais produtos do catálogo vendidos juntos, com desconto)
+-- =====================================================================
+create table combos (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  target_price numeric(10,2) not null default 0, -- preço de venda do combo (definido por você)
+  active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table combo_items (
+  id uuid primary key default gen_random_uuid(),
+  combo_id uuid not null references combos(id) on delete cascade,
+  product_id uuid not null references products(id),
+  quantity int not null default 1 check (quantity > 0)
+);
+
+alter table combos enable row level security;
+alter table combo_items enable row level security;
+
+create policy "Usuário autenticado tem acesso total" on combos for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+create policy "Usuário autenticado tem acesso total" on combo_items for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+
+-- Quando um combo é vendido, ele "explode" nos produtos que o compõem — cada
+-- item da venda continua sendo um produto de verdade (então o estoque baixa
+-- sozinho, como sempre), só que marcado com qual combo ele veio, para
+-- aparecer certinho na tela de Vendas.
+alter table sale_items add column combo_id uuid references combos(id) on delete set null;
+alter table sale_items add column combo_name text; -- nome do combo no momento da venda (não muda se o combo for renomeado ou removido depois)
+
 -- Fim do schema.

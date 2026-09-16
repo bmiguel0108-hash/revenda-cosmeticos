@@ -1,10 +1,10 @@
 import ProductCard from "@/components/catalogo/ProductCard";
 
-export default function ProductGrid({ products, brands, paymentMethods }) {
+export default function ProductGrid({ products, brands, paymentMethods, categories }) {
   if (!products || products.length === 0) {
     return (
       <div className="card text-center text-gray-400 py-10">
-        Nenhum produto cadastrado ainda.
+        Nenhum produto encontrado.
       </div>
     );
   }
@@ -17,6 +17,7 @@ export default function ProductGrid({ products, brands, paymentMethods }) {
           product={product}
           brands={brands}
           paymentMethods={paymentMethods}
+          categories={categories}
         />
       ))}
     </div>

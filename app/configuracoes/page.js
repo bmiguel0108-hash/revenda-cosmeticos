@@ -1,13 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
 import PaymentMethodsSection from "@/components/configuracoes/PaymentMethodsSection";
 import BrandsSection from "@/components/configuracoes/BrandsSection";
+import CategoriesSection from "@/components/configuracoes/CategoriesSection";
 
 export default async function ConfiguracoesPage() {
   const supabase = await createClient();
 
-  const [{ data: paymentMethods }, { data: brands }] = await Promise.all([
+  const [{ data: paymentMethods }, { data: brands }, { data: categories }] = await Promise.all([
     supabase.from("payment_methods").select("*").order("sort_order"),
     supabase.from("brands").select("*").order("name"),
+    supabase.from("categories").select("*").order("sort_order"),
   ]);
 
   return (
@@ -23,6 +25,7 @@ export default async function ConfiguracoesPage() {
 
       <PaymentMethodsSection paymentMethods={paymentMethods || []} />
       <BrandsSection brands={brands || []} />
+      <CategoriesSection categories={categories || []} />
     </div>
   );
 }

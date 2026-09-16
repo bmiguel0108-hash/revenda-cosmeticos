@@ -14,8 +14,9 @@ const initialState = {
   ready_for_delivery: false,
 };
 
-export default function NewProductForm({ brands }) {
+export default function NewProductForm({ brands, categories = [] }) {
   const [form, setForm] = useState(initialState);
+  const [categoryIds, setCategoryIds] = useState([]);
   const [error, setError] = useState("");
   const [open, setOpen] = useState(false);
   const [photoPreview, setPhotoPreview] = useState(null);
@@ -24,6 +25,10 @@ export default function NewProductForm({ brands }) {
 
   function update(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
+  }
+
+  function toggleCategory(id) {
+    setCategoryIds((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]));
   }
 
   function handlePhotoChange(e) {
@@ -46,6 +51,7 @@ export default function NewProductForm({ brands }) {
     if (fileRef.current?.files?.[0]) {
       formData.set("photo", fileRef.current.files[0]);
     }
+    formData.set("category_ids", JSON.stringify(categoryIds));
 
     startTransition(async () => {
       const result = await createProduct(formData);
@@ -53,6 +59,7 @@ export default function NewProductForm({ brands }) {
         setError(result.error);
       } else {
         setForm(initialState);
+        setCategoryIds([]);
         setPhotoPreview(null);
         if (fileRef.current) fileRef.current.value = "";
         setOpen(false);
@@ -177,6 +184,32 @@ export default function NewProductForm({ brands }) {
         />
         Pronto para entrega (já tenho em mãos)
       </label>
+
+      {categories.length > 0 && (
+        <div className="mt-4">
+          <label className="label">Categorias</label>
+          <div className="flex flex-wrap gap-2">
+            {categories.map((c) => (
+              <label
+                key={c.id}
+                className={`badge cursor-pointer transition ${
+                  categoryIds.includes(c.id)
+                    ? "bg-brand-600 text-white"
+                    : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  className="hidden"
+                  checked={categoryIds.includes(c.id)}
+                  onChange={() => toggleCategory(c.id)}
+                />
+                {c.name}
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
 
       {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
 

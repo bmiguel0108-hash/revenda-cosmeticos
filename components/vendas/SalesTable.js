@@ -41,7 +41,14 @@ function DetailRow({ sale, items }) {
             <tbody>
               {(items || []).map((item) => (
                 <tr key={item.id}>
-                  <td>{item.products?.name || "—"}</td>
+                  <td>
+                    {item.products?.name || "—"}
+                    {item.combo_name && (
+                      <span className="badge bg-brand-50 text-brand-700 ml-2">
+                        combo: {item.combo_name}
+                      </span>
+                    )}
+                  </td>
                   <td>{item.quantity}</td>
                   <td>{formatMoney(item.unit_price)}</td>
                   <td>{formatMoney(item.unit_cost)}</td>
